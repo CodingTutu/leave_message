@@ -1,0 +1,25 @@
+body{
+    /*background-color: #f1f1f1;*/
+}
+.intro-header{
+    /*background: url("../img/intro-header.jpg") center center no-repeat;*/
+    padding-top: 250px;
+    padding-bottom: 250px;
+    text-align: center;
+    background-size: cover;
+}
+.intro-divider{
+    width: 400px;
+}
+.footer_menu{
+    margin-top: 150px;
+    font-size: 16px;
+    font-weight: bold;
+}
+.copyright{
+    font-weight: bold;
+}
+.topnav{
+    margin-top: -12px;
+    font-size: 16px;
+}

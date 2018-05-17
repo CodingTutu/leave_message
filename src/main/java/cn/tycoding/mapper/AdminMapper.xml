@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tycoding.mapper.AdminMapper">
+
+    <resultMap id="AdminBaseMap" type="cn.tycoding.pojo.Admin">
+        <id property="a_id" column="a_id" jdbcType="INTEGER"/>
+        <result property="a_name" column="a_name" jdbcType="VARCHAR"/>
+        <result property="a_password" column="a_password" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 登录的功能 -->
+    <select id="login" resultType="cn.tycoding.pojo.Admin" parameterType="String">
+        select * from admin where a_name = #{a_name}
+    </select>
+
+    <!-- 注册的功能 -->
+    <insert id="insert" parameterType="cn.tycoding.pojo.Admin">
+        insert into
+        admin(
+          a_name,
+          a_password
+        )
+        values(
+          #{a_name},
+          #{a_password}
+        )
+    </insert>
+
+    <!-- 根据用户名查询 -->
+    <select id="findByName" parameterType="String" resultType="cn.tycoding.pojo.Admin">
+        select a_name from admin where a_name = #{a_name}
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="selectCount" resultType="int">
+        select count(*) from admin
+    </select>
+
+    <!-- 查询普通用户的总记录数 -->
+    <select id="selectCount_u" resultType="int">
+        select count(*) from admin where a_identity_id = 4
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="conFindByPage" parameterType="Map" resultMap="AdminBaseMap">
+        select * from admin
+        <if test="checkStatus == 1">
+            where a_identity_id = 4
+        </if>
+        <if test="checkStatus == 0">
+            where 1=1
+        </if>
+        <if test="a_name != null and a_name != ''">
+            and a_name like concat('%', #{a_name}, '%')
+        </if>
+        <if test="a_telephone != null and a_telephone != ''">
+            and a_telephone like concat('%', #{a_telephone}, '%')
+        </if>
+        <if test="a_identity != null and a_identity != ''">
+            and a_identity like concat('%', #{a_identity}, '%')
+        </if>
+        <if test="start != null and size != null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <!-- 多条件查询 -->
+    <select id="findByPage" parameterType="Map" resultMap="AdminBaseMap">
+        select * from admin
+        <if test="checkStatus == 1">
+            where a_identity_id = 4
+        </if>
+        <if test="start != null and size != null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <!-- 根据id查询的方法 -->
+    <select id="findById" parameterType="int" resultType="cn.tycoding.pojo.Admin">
+        select * from admin where a_id = #{a_id}
+    </select>
+
+    <!-- 根据id删除信息 -->
+    <delete id="delete" parameterType="int">
+        delete from admin where a_id = #{a_id}
+    </delete>
+
+    <!-- 更新数据的方法 -->
+    <update id="update" parameterType="cn.tycoding.pojo.Admin">
+        update admin set
+          a_id          = #{a_id},
+          a_name        = #{a_name},
+          a_password    = #{a_password},
+        where
+          a_id = #{a_id};
+    </update>
+
+</mapper>

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tycoding.mapper.ArticleMapper">
+
+    <resultMap id="BaseMap" type="cn.tycoding.pojo.Article">
+        <id property="r_id" column="r_id" jdbcType="INTEGER"/>
+        <result property="r_author" column="r_author" jdbcType="VARCHAR"/>
+        <result property="r_summary" column="r_summary" jdbcType="VARCHAR"/>
+        <result property="r_content" column="r_content" jdbcType="VARCHAR"/>
+        <result property="r_date" column="r_date" jdbcType="VARCHAR"/>
+        <result property="r_verify" column="r_verify" jdbcType="INTEGER"/>
+        <result property="r_publish" column="r_publish" jdbcType="INTEGER"/>
+        <result property="r_status" column="r_status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="WordsBaseMap" type="cn.tycoding.pojo.Words">
+        <id column="lw_id" property="lw_id" jdbcType="INTEGER"/>
+        <result column="lw_name" property="lw_name" jdbcType="VARCHAR"/>
+        <result column="lw_date" property="lw_date" jdbcType="VARCHAR"/>
+        <result column="lw_content" property="lw_content" jdbcType="VARCHAR"/>
+        <result column="lw_for_name" property="lw_for_name" jdbcType="VARCHAR"/>
+        <result column="lw_for_article_id" property="lw_for_article_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="ReplyBaseMap" type="cn.tycoding.pojo.Reply">
+        <id column="lr_id" property="lr_id" jdbcType="INTEGER"/>
+        <result column="lr_name" property="lr_name" jdbcType="VARCHAR"/>
+        <result column="lr_date" property="lr_date" jdbcType="VARCHAR"/>
+        <result column="lr_content" property="lr_content" jdbcType="VARCHAR"/>
+        <result column="lr_for_name" property="lr_for_name" jdbcType="VARCHAR"/>
+        <result column="lr_for_words" property="lr_for_words" jdbcType="VARCHAR"/>
+        <result column="lr_for_article_id" property="lr_for_article_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 保存文章信息的方法 -->
+    <insert id="saveArticle" parameterType="cn.tycoding.pojo.Article">
+        insert into article(
+          r_author,
+          r_summary,
+          r_content,
+          r_date,
+          r_verify,
+          r_publish,
+          r_status)
+        values(
+          #{r_author},
+          #{r_summary},
+          #{r_content},
+          #{r_date},
+          #{r_verify},
+          #{r_publish},
+          #{r_status}
+        )
+    </insert>
+
+    <!-- 查询（未clean）总记录数 -->
+    <select id="selectCount" resultType="int">
+        select count(*) from article where r_status = 0
+    </select>
+
+    <!-- 查询（已clean）记录总数 -->
+    <select id="selectCount2" resultType="int">
+        select count(*) from article where r_status = 1;
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="findByPage" resultMap="BaseMap" parameterType="Map">
+        select * from article
+        <!-- 表示我进入的是文章列表页面 -->
+        <if test="goId == 0">
+            where r_status = 0
+        </if>
+        <!-- 表示我进入的是回收站页面 -->
+        <if test="goId == 1">
+            where r_status = 1
+        </if>
+        <if test="start != null and size != null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <!-- 多条件查询 -->
+    <select id="findConByPage" resultMap="BaseMap" parameterType="Map">
+        select * from article
+        <!-- 表示我进入的是文章列表页面 -->
+        <if test="goId == 0">
+            where r_status = 0
+        </if>
+        <!-- 表示我进入的是回收站页面 -->
+        <if test="goId == 1">
+            where r_status = 1
+        </if>
+        <if test="r_verify != null and r_verify != ''">
+            and r_verify = #{r_verify}
+        </if>
+        <if test="r_publish != null and r_publish != ''">
+            and r_publish = #{r_publish}
+        </if>
+        <if test="r_status != null and r_status != ''">
+            and r_status = #{r_status}
+        </if>
+        <if test="start != null and size != null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <!-- 删除功能（永久删除信息） -->
+    <delete id="delete" parameterType="int">
+        delete from article where r_id = #{r_id}
+    </delete>
+
+    <!-- 更新功能 -->
+    <update id="update" parameterType="cn.tycoding.pojo.Article">
+        update article set
+          r_id        = #{r_id},
+          r_author    = #{r_author},
+          r_summary   = #{r_summary},
+          r_content   = #{r_content},
+          r_date      = #{r_date},
+          r_verify    = #{r_verify},
+          r_publish   = #{r_publish},
+          r_status    = #{r_status}
+        where r_id = #{r_id}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="findById" parameterType="int" resultType="cn.tycoding.pojo.Article">
+        select * from article where r_id = #{r_id}
+    </select>
+
+    <!-- 文章删除功能（仅把文章放入到回收站） -->
+    <update id="clean" parameterType="int">
+        update article set r_status = 1 where r_id = #{r_id}
+    </update>
+
+    <!-- 恢复文章的功能（将文章从回收站中移除，即仅仅改变status的值即可） -->
+    <update id="restore" parameterType="int">
+        update article set r_status = 0 where r_id = #{r_id}
+    </update>
+
+    <!-- 保存留言信息 -->
+    <insert id="saveWords" parameterType="cn.tycoding.pojo.Words">
+        insert into words(
+          lw_name,
+          lw_date,
+          lw_content,
+          lw_for_name,
+          lw_for_article_id
+        )
+        values(
+          #{lw_name},
+          #{lw_date},
+          #{lw_content},
+          #{lw_for_name},
+          #{lw_for_article_id}
+        )
+    </insert>
+
+    <!-- 保存回复信息 -->
+    <insert id="saveReply" parameterType="cn.tycoding.pojo.Reply">
+        insert into reply(
+          lr_name,
+          lr_date,
+          lr_content,
+          lr_for_name,
+          lr_for_words,
+          lr_for_reply,
+          lr_for_article_id
+        )
+        values(
+          #{lr_name},
+          #{lr_date},
+          #{lr_content},
+          #{lr_for_name},
+          #{lr_for_words},
+          #{lr_for_reply},
+          #{lr_for_article_id}
+        )
+    </insert>
+
+    <!-- 查询所有留言信息 -->
+    <select id="findByWords" resultMap="WordsBaseMap">
+        select * from words
+    </select>
+
+    <!-- 查询所有回复信息 -->
+    <select id="findByReply" resultMap="ReplyBaseMap">
+        select * from reply
+    </select>
+
+</mapper>
